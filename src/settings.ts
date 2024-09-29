@@ -1,18 +1,15 @@
 import { PluginSettingTab, Setting, App, MarkdownView } from 'obsidian';
 import { ObsidianSpreadsheet } from './main';
 
-export class SheetSettingsTab extends PluginSettingTab 
-{
+export class SheetSettingsTab extends PluginSettingTab {
 	plugin: ObsidianSpreadsheet;
 
-	constructor(app: App, plugin: ObsidianSpreadsheet) 
-	{
+	constructor(app: App, plugin: ObsidianSpreadsheet) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
 
-	display(): void 
-	{
+	display(): void {
 		const { containerEl } = this;
 
 		containerEl.empty();
@@ -23,8 +20,7 @@ export class SheetSettingsTab extends PluginSettingTab
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.nativeProcessing)
-					.onChange(async value => 
-					{
+					.onChange(async value => {
 						this.plugin.settings.nativeProcessing = value;
 						await this.plugin.saveSettings();
 						// @ts-expect-error workspace.activeLeaf is deprecated and the following 
@@ -41,8 +37,7 @@ export class SheetSettingsTab extends PluginSettingTab
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.paragraphs)
-					.onChange(async value => 
-					{
+					.onChange(async value => {
 						this.plugin.settings.paragraphs = value;
 						await this.plugin.saveSettings();
 						// @ts-expect-error workspace.activeLeaf is deprecated and the following 

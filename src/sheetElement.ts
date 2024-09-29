@@ -1,4 +1,4 @@
-import { ObsidianSpreadsheet } from 'main';
+import { ObsidianSpreadsheet } from './main';
 import {
 	App,
 	MarkdownPostProcessorContext,

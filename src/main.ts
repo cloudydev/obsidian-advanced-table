@@ -23,73 +23,54 @@ export class ObsidianSpreadsheet extends Plugin {
 			'sheet',
 			async (
 				source: string,
-				el: HTMLTableElement,
+				el: HTMLElement,
 				ctx: MarkdownPostProcessorContext
 			) => {
 				source = source.trim();
-				ctx.addChild(
-					new SheetElement(
-						el,
-						source,
-						ctx,
-						this.app,
-						this
-					)
-				);
+				ctx.addChild(new SheetElement(
+					el as HTMLTableElement,
+					source,
+					ctx,
+					this.app,
+					this
+				));
 			}
 		);
 
-		// this.registerMarkdownCodeBlockProcessor(
-		// 	'sheet_meta',
-		// 	async (
-		// 		source: string,
-		// 		el,
-		// 		ctx
-		// 	) =>
-		// 	{
-		// 		ctx.addChild(new MetaParser(el, source, ctx, this.app, this));
-		// 	}
-		// );
-		
-		this.registerMarkdownPostProcessor(async (el, ctx) => 
-		{
-			if (!this.settings.nativeProcessing) return;
-			if (ctx.frontmatter?.['disable-sheet'] === true) return;
+		this.registerMarkdownPostProcessor(async (el, ctx) => {
+			if (!this.settings.nativeProcessing) {
+				return;
+			}
+
+			if (ctx.frontmatter?.['disable-sheet'] === true) {
+				return;
+			}
 
 			const tableEls = el.querySelectorAll('table');
 			if (tableEls.length) {
-
-				for (const tableEl of Array.from(tableEls))
-				{
+				for (const tableEl of Array.from(tableEls)) {
 					if (!tableEl) return;
-					if (tableEl?.id === 'obsidian-sheets-parsed') return;
+					if (tableEl?.id === 'obsidian-sheets-parsed') {
+						return;
+					}
 
 					const sec = ctx.getSectionInfo(tableEl);
 					let source: string = '';
-					if (!sec)
-					{
-						tableEl.querySelectorAll(':scope td').forEach(({ childNodes }) => childNodes.forEach(node => 
-						{
-							if (node.nodeType == 3) // Text node type
-								node.textContent = node.textContent?.replace(/[*_`[\]$()]|[~=]{2}/g, '\\$&') || '';
+					if (!sec) {
+						tableEl.querySelectorAll(':scope td').forEach(({ childNodes }) => childNodes.forEach(node => {
+							// Text node type
 							// See https://help.obsidian.md/Editing+and+formatting/Basic+formatting+syntax#Styling+text
+							if (node.nodeType == 3) {
+								node.textContent = node.textContent?.replace(/[*_`[\]$()]|[~=]{2}/g, '\\$&') || '';
+							}
 						}));
-						tableEl.querySelectorAll(':scope a.internal-link').forEach((link: HTMLAnchorElement) => 
-						{ 
-							const parsedLink = document.createElement('span');
-							parsedLink.innerText = `[[${link.getAttr('href')}|${link.innerText}]]`;
-							link.replaceWith(parsedLink);
-						});
-						tableEl.querySelectorAll(':scope span.math').forEach((link: HTMLSpanElement) =>
-							link.textContent?.trim().length ? link.textContent = `$${link.textContent || ''}$` : null
-						);
 
-						source = htmlToMarkdown(tableEl).trim().replace(/\\\\/g, '$&$&');
-						if (!source) return;
+						tableEl.querySelectorAll(':scope span.math').forEach((link: Element) =>
+							link.textContent?.trim().length ? (link.textContent = `$${link.textContent || ''}$`) : null
+						);
 					}
-					else
-					{
-						const {text, lineStart, lineEnd} = sec;
+					else {
+						const { text, lineStart, lineEnd } = sec;
 						let textContent = text
 							.split('\n')
 							.slice(lineStart, 1 + lineEnd)
@@ -98,39 +79,39 @@ export class ObsidianSpreadsheet extends Plugin {
 
 						if (textContent[0].startsWith('```')) return;
 						if (endIndex !== -1) textContent = textContent.slice(0, endIndex + 1);
-					
-						if (
-							!textContent
-								.filter((row) => /(?<!\\)\|/.test(row))
-								.map((row) => row.split(/(?<!\\)\|/)
-									.map(cell => cell.trim()))
-								.every(
-									(row) => !row.pop()?.trim() && !row.shift()?.trim()
-								)
-						) return; // Need a better way to figure out if not randering a table; use test for validity on actual table function here since if get to here table is valid.
+
+						if (!textContent
+							.filter((row) => /(?<!\\)\|/.test(row))
+							.map((row) => row.split(/(?<!\\)\|/).map(cell => cell.trim()))
+							.every((row) => !row.pop()?.trim() && !row.shift()?.trim())
+						) {
+							// Need a better way to figure out if not randering a table; use test for validity on actual table function here since if get to here table is valid.
+							return; 
+						}
 						source = textContent.join('\n');
 					}
-		
+
 					tableEl.empty();
 					ctx.addChild(new SheetElement(tableEl, source.trim(), ctx, this.app, this));
 				}
 				return;
 			}
 			const tableEl = el.closest('table');
-			if (!tableEl) return;
-			if (tableEl?.id === 'obsidian-sheets-parsed') return;
+			if (!tableEl) {
+				return;
+			}
+			if (tableEl?.id === 'obsidian-sheets-parsed') {
+				return;
+			} 
 
-			const rawMarkdown =
-				ctx.getSectionInfo(tableEl)?.text || htmlToMarkdown(tableEl);
-			const rawMarkdownArray =
-				rawMarkdown
-					.replace(/\n\s*\|\s*-+.*?(?=\n)/g, '') // remove newlines and heading delim
-					.replace(/^\||\|$/gm, '')
-					.split(/\||\n/g);
+			const rawMarkdown = ctx.getSectionInfo(tableEl)?.text || htmlToMarkdown(tableEl);
+			const rawMarkdownArray = rawMarkdown
+				.replace(/\n\s*\|\s*-+.*?(?=\n)/g, '') // remove newlines and heading delim
+				.replace(/^\||\|$/gm, '')
+				.split(/\||\n/g);
 			const toChange = rawMarkdownArray
 				.reduce((cum, curr, i) => {
-					/(?<!~|\\)~(?!~)|^(-+|<|\^)\s*$/.test(curr) &&
-						cum.push(i);
+					/(?<!~|\\)~(?!~)|^(-+|<|\^)\s*$/.test(curr) && cum.push(i);
 					return cum;
 				}, [] as number[]);
 
@@ -152,8 +133,7 @@ export class ObsidianSpreadsheet extends Plugin {
 					try {
 						cellStyle = { ...cellStyle, ...JSON5.parse(inlineStyle) };
 					}
-					catch
-					{
+					catch {
 						console.error(`Invalid cell style \`${inlineStyle}\``);
 					}
 
@@ -164,11 +144,11 @@ export class ObsidianSpreadsheet extends Plugin {
 				}
 				// merging currently does not work - the cells get merged but the `<`/`^` cells still stay on the table
 				// merge left
-				else if (/^\s*<\s*$/.test(cellContent) && column > 0) { 
+				else if (/^\s*<\s*$/.test(cellContent) && column > 0) {
 					if (!DOMCellArray[index - 1].colSpan) DOMCellArray[index - 1].colSpan = 1;
 					DOMCellArray[index - 1].colSpan += 1;
 					// .remove() does not work - table editor renders on top and rebuilds the cell
-					DOMCellArray[index].style.display = 'none'; 
+					DOMCellArray[index].style.display = 'none';
 					delete DOMCellArray[index];
 					DOMCellArray[index] = DOMCellArray[index - 1];
 				}
@@ -179,7 +159,7 @@ export class ObsidianSpreadsheet extends Plugin {
 					DOMCellArray[index].style.display = 'none';
 					delete DOMCellArray[index];
 					DOMCellArray[index] = DOMCellArray[index - tableWidth];
-				} 
+				}
 				// TODO: row headers
 				// else if (/^\s*-+\s*$/.test(cellContent)) {
 				// } 

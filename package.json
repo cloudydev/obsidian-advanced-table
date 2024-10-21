@@ -19,6 +19,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^9.12.0",
     "@types/node": "20.12.7",
     "@types/showdown": "^2.0.1",
     "@typescript-eslint/eslint-plugin": "6.3.0",
@@ -26,11 +27,13 @@
     "builtin-modules": "3.3.0",
     "csstype": "^3.1.2",
     "esbuild": "0.17.3",
-    "eslint": "^8.49.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.1",
+    "globals": "^15.11.0",
+    "gts": "^5.3.1",
     "obsidian": "^1.4.11",
     "tslib": "2.4.0",
-    "typescript": "^5.4.3",
-    "gts": "^5.3.1"
+    "typescript": "^5.4.3"
   },
   "dependencies": {
     "json5": "^2.2.3"

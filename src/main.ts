@@ -49,6 +49,12 @@ export class ObsidianSpreadsheet extends Plugin {
             return;
           }
 
+          const startIndex = textContent.findIndex(line => /^\|/.test(line));
+          if (startIndex == -1) {
+            return;
+          }
+
+          textContent = textContent.slice(startIndex);
           const endIndex = textContent.findIndex(line => /^(?!\|)/.test(line));
           if (endIndex !== -1) {
             textContent = textContent.slice(0, endIndex + 1);
